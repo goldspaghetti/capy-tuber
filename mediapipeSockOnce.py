@@ -90,7 +90,6 @@ def print_result(result: FaceLandmarkerResult, output_image: mp.Image, timestamp
     sock.sendto(data, addr)
     # plot_face_blendshapes_bar_graph(face_blendshapes)
     
-
 def line_to_triangles(lines, num_point):
   triangles = []
   list_line = list(lines)
@@ -146,9 +145,9 @@ def line_to_triangles2(lines):
                      if not (point1 in allp):
                         allp.append(point1)
             if same1 == 1 and same2 == 1 and same3 == 1 and len(allp) == 3:
+               #make sure not repeated since for some reason they repeat connections
                triangles.append([allp[0], allp[1], allp[2]])
    return triangles
-
 
 options = FaceLandmarkerOptions(
     base_options=BaseOptions(model_asset_path=model_path),
@@ -158,7 +157,6 @@ options = FaceLandmarkerOptions(
 landmarker = FaceLandmarker.create_from_options(options)
 mp_image = mp.Image.create_from_file("putin.jpg")
 result = landmarker.detect(mp_image)
-print("WTFF\nWTFFF")
 
 all_float_data = []
 all_int_data = []
@@ -173,13 +171,13 @@ for res in landmarks:
         all_float_data.append(landmark.z)
 
 
-face_connection = mp.solutions.face_mesh.FACEMESH_TESSELATION
-# for connection in face_connection:
-#   all_int_data.append(connection[0])
-#   all_int_data.append(connection[1])
+face_connection = frozenset().union(*[mp.solutions.face_mesh.FACEMESH_LIPS, mp.solutions.face_mesh.FACEMESH_LEFT_EYE, mp.solutions.face_mesh.FACEMESH_LEFT_EYEBROW, mp.solutions.face_mesh.FACEMESH_RIGHT_EYE, mp.solutions.face_mesh.FACEMESH_RIGHT_EYEBROW, mp.solutions.face_mesh.FACEMESH_FACE_OVAL, mp.solutions.face_mesh.FACEMESH_TESSELATION])
 # triangles = line_to_triangles2(face_connection)
-# print(len(triangles))
-# print(triangles)
+# f = open('triangles.json', 'w', encoding="utf-8")
+# f.write(json.dumps(triangles))
+# f.close()
+
+
 f = open('triangles.json', 'r', encoding="utf-8")
 triangles = json.loads(f.readline())
 f.close()
@@ -189,35 +187,19 @@ for i in range(len(triangles)):
   for j in range(3):
     all_int_data.append(triangles[i][j])
 
-print(f"land len: {len(all_float_data)/3}")
-print(f"uv len: {len(face_connection)}")
-print(f"tri len: {len(triangles)}")
-print(f"total float: {len(all_float_data)}")
-print(f"total int: {len(all_int_data)}")
-# for a in all_float_data:
-#     data = struct.pack('@f', a)
-#     sock.sendto(data, addr)
-#     time.sleep(0.005)
+def send_landmark468():
+   data = struct.pack('@' + 'f'*(468*3), *(all_float_data[0:468*3]))
+   # data = struct.pack('@' + 'i'*len(all_int_data), *all_int_data)
+   sock.sendto(data, addr)
+   print("send landmark")
 
-# for a in all_int_data:
-#     data = struct.pack('@f', float(a))
-#     sock.sendto(data, addr)
-#     time.sleep(0.005)
-data = struct.pack('@' + 'f'*len(all_float_data), *all_float_data)
-# data = struct.pack('@' + 'i'*len(all_int_data), *all_int_data)
-sock.sendto(data, addr)
-
-#data = struct.pack('@' + 'f'*int(all_float_data) + 'i'*len(all_int_data), *all_float_data, *all_int_data)
-#sock.sendto(data, addr)
-
-# while True:
-#   ret, frame = cap.read()
-#   mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
-#   landmarker.detect_async(mp_image, int((time.time()-start)*1000))
-#   time.sleep(0.005) 
-
-
-
-# cap.release()
-# cv.destroyAllWindows()
- 
+def send_connections():
+   connection_list = []
+   for connection in list(face_connection):
+      connection_list.append(connection[0])
+      connection_list.append(connection[1])
+   print(len(connection_list)*4)
+   data = struct.pack('@' + 'i'*(len(connection_list)), *connection_list)
+   sock.sendto(data, addr)
+send_landmark468()
+# send_connections()
