@@ -56,5 +56,6 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "vtube_test.sln"
+    "dotnet.defaultSolution": "capy-tuber.sln",
+    "dotnet.preferCSharpExtension": true
 }

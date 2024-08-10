@@ -16,7 +16,7 @@ namespace Live2D.Cubism.Core
     /// <summary>
     /// 'Atomic' <see cref="CubismModel"/> update task.
     /// </summary>
-    internal sealed class CubismTaskableModel : ICubismTask
+    public sealed class CubismTaskableModel : ICubismTask
     {
         #region Factory Methods
 
