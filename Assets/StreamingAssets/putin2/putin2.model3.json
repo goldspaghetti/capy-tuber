@@ -1,0 +1,10 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "putin2.moc3",
+		"Textures": [
+			"putin2.1024/texture_00.png"
+		],
+		"DisplayInfo": "putin2.cdi3.json"
+	}
+}
